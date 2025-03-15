@@ -1,0 +1,10 @@
+= PasteRB.slim
+
+== Running
+Get a caddy build from <https://caddyserver.com/download> with https://github.com/aksdb/caddy-cgi[cgi support] and save it as `caddy_cgi`.
+
+```
+bundle install
+bundle exec rake db:up
+bundle exec foreman start
+```
