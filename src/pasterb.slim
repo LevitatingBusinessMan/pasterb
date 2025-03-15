@@ -3,12 +3,34 @@ ruby:
   $cgi = CGI.new
   puts $cgi.http_header "text/html"
 
+  $errors = []
+
   require './src/data.rb'
+  require './src/log.rb'
 
-  $paste = Paste.find_by(read_key: $cgi[:PATH_INFO].sub(/^\/view/, ''))  
+  key = $cgi['']
 
-  if $paste.nil?
-    $paste = Paste.new
+  $writable = true
+
+  begin
+  $paste = case $cgi.path_info
+  when "/view"
+      $writable = false
+    Paste.find_by! read_key: key
+  when "/edit"
+    Paste.find_by! write_key: key
+  when "/"
+    Paste.new
+  else 
+    raise "Unknown #{$cgi.path_info}"
+  end
+
+  rescue Exception => ex
+    $errors << ex
+    if $paste.nil?
+      $paste = Paste.new
+      $writable = true
+    end
   end
 
 doctype html
@@ -30,26 +52,45 @@ head
       margin: 0;
     }
 body
-  div#editor
-    = $paste.inspect
-    = $cgi.inspect
-    = "\n"
-    = ENV.inspect
+  - for e in $errors
+    p#error=e
+  h1#title=$paste.title
+  - if $paste.new_record?
+    span#unsaved unsaved
+  br
+  div#editor= $paste.content
   div#history
     h1 History
-    label Name
-    input
-    br
-    label Commit Message
-    input
-    br
-    button submit
+    - for rev in $paste.revisions.order(revision_id: :desc)
+      h3= rev.name
+    - if $writable
+      h2 New Revision
+      label Name:
+      input[placeholder="Revision #{$paste.revisions.length + 1}"]
+      br
+      br
+      button submit
+      br
+    - unless $paste.new_record?
+      a[href=$paste.view_link] view link
+      br
+      - if $writable 
+        a[href=$paste.edit_link] edit link
 
-script src="static/ace-builds/src/ace.js"
+script src="/static/ace-builds/src/ace.js"
 javascript:
   var editor = ace.edit("editor");
   editor.setTheme("ace/theme/monokai");
   editor.session.setMode("ace/mode/javascript");
   editor.setOptions({
-    wrap: true
+    wrap: true,
+    fontSize: 20
   });
+
+css: 
+  h1#title {
+    display: inline-block;
+  }
+  p#error {
+    color: red;
+  }
