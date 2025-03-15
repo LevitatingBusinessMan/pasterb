@@ -33,64 +33,98 @@ ruby:
     end
   end
 
+  begin
+    $rev = $cgi.has_key?("rev") ? $cgi["rev"] : nil
+    $content = $paste.content $rev
+  rescue Exception => ex 
+    $errors << ex
+    $content = $paste.content
+  end
+
 doctype html
 html
 head
-  css:
-    #editor, #history {
-      height: 100%;
-      max-width: 100%;
-      display: inline-block;
-      vertical-align: middle;
-    }
-    #editor {
-      width: 60%;
-    }
-    html, body {
-      height: 100%;
-      padding: 0;
-      margin: 0;
-    }
 body
-  - for e in $errors
-    p#error=e
-  h1#title=$paste.title
-  - if $paste.new_record?
-    span#unsaved unsaved
-  br
-  div#editor= $paste.content
-  div#history
-    h1 History
-    - for rev in $paste.revisions.order(revision_id: :desc)
-      h3= rev.name
-    - if $writable
-      h2 New Revision
-      label Name:
-      input[placeholder="Revision #{$paste.revisions.length + 1}"]
+  #title_area
+    h1#title=$paste.title
+    - if $rev
+      span#rev= "Showing revision #{$rev}"
+      a#latest[href=($writable ? $paste.edit_link : $paste.view_link)] go to latest
+    - if $paste.new_record?
+      span#unsaved unsaved
+  #flex
+    #left
+      #editor= $content
+    #right
+      - for e in $errors
+        p#error=e
+      - if $writable
+        label New Revision:  
+        input[placeholder="Revision #{$paste.revisions.length + 1}"]
+        button save
+        br
+      h1 History
+      - for rev in $paste.revisions.order(revision_id: :desc)
+        span
+          | (#{rev.revision_id})  
+          a[href=($writable ? rev.edit_link : rev.view_link)]= rev.name
+        br
       br
-      br
-      button submit
-      br
-    - unless $paste.new_record?
-      a[href=$paste.view_link] view link
-      br
-      - if $writable 
-        a[href=$paste.edit_link] edit link
+      - unless $paste.new_record?
+        a[href=$paste.view_link] view link
+        br
+        - if $writable 
+          a[href=$paste.edit_link] edit link
 
 script src="/static/ace-builds/src/ace.js"
 javascript:
   var editor = ace.edit("editor");
   editor.setTheme("ace/theme/monokai");
-  editor.session.setMode("ace/mode/javascript");
   editor.setOptions({
     wrap: true,
     fontSize: 20
   });
 
-css: 
+css:
+  #title_area * {
+    padding-right: 5px;
+  }
+  
   h1#title {
     display: inline-block;
   }
+  
   p#error {
+    margin: 0;
+    padding-top: 10px;
     color: red;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  #flex {
+    flex: 1;
+    display: flex;
+  }
+
+  #left, #right {
+    height: 100%;
+    max-width: 100%;
+    display: inline-block;
+    vertical-align: middle;
+  }
+  #left {
+    width: 60%;
+    resize: horizontal;
+  }
+  #editor {
+    height: 100%;
+  }
+  html, body {
+    height: 100%;
+    padding: 0;
+    margin: 0;
   }

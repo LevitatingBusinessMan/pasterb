@@ -2,7 +2,7 @@ require 'active_record'
 require 'securerandom'
 require './src/log.rb'
 
-ActiveRecord::Base.establish_connection(adapter: 'sqlite3', database: ENV['DB'])
+ActiveRecord::Base.establish_connection(adapter: 'sqlite3', database: ENV['DB'] || "pasterb.sqlite3")
 
 ActiveRecord::Base.logger = $log
 
@@ -22,8 +22,12 @@ class Paste < ActiveRecord::Base
     "/edit?=#{self.write_key}"
   end
 
-  def content
-    self.revisions.order(revision_id: :desc).first&.content || ""
+  def content rev=nil
+    if rev
+      self.revisions.find_by!(revision_id: rev).content
+    else
+      self.revisions.order(revision_id: :desc).first&.content || ""
+    end
   end
 
 end
@@ -47,6 +51,14 @@ class Revision < ActiveRecord::Base
   validates :revision_id, presence: true
   validates :revision_id, uniqueness: { scope: :paste_id }
 
+  def edit_link
+    self.paste.edit_link + "&rev=#{self.revision_id}"
+  end
+
+  def view_link
+    self.paste.view_link + "&rev=#{self.revision_id}"
+  end
+
   private
   def init
     self.revision_id ||= self.paste.revisions.length + 1
@@ -62,6 +74,8 @@ class RevisionMigration < ActiveRecord::Migration[8.0]
       t.column :name, :text
       t.column :content, :text
       t.column :revision_id, :integer
+      t.column :user_agent, :text
+      t.column :ip, :text
 
       t.timestamps
     end

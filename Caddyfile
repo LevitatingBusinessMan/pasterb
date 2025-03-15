@@ -14,6 +14,5 @@ handle_path /static/* {
 }
 
 cgi /* /bin/bundle exec slimrb src/pasterb.slim {
-  env DB=./data.sqlite3
   dir .
 }
