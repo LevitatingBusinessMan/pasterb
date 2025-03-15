@@ -38,6 +38,7 @@ class PasteMigration < ActiveRecord::Migration[8.0]
       t.column :title, :text
       t.column :read_key, :text, limit: 32
       t.column :write_key, :text, limit: 32
+      t.column :syntax, :text
 
       t.timestamps
     end

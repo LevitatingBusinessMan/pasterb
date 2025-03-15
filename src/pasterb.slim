@@ -107,7 +107,16 @@ css:
   
   #flex {
     flex: 1;
-    display: flex;
+  }
+
+  #left {
+    resize: horizontal;
+    overflow: auto;
+    width: 75%;
+  }
+
+  #right {
+    margin-left: 10px;
   }
 
   #left, #right {
@@ -116,14 +125,8 @@ css:
     display: inline-block;
     vertical-align: middle;
   }
-  #left {
-    width: 60%;
-    resize: horizontal;
-  }
-  #editor {
-    height: 100%;
-  }
-  html, body {
+
+  html, body, #editor {
     height: 100%;
     padding: 0;
     margin: 0;
