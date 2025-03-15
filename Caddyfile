@@ -1,0 +1,15 @@
+{
+  http_port 8888
+}
+
+localhost:8888
+
+handle_path /static/* {
+  root static
+  file_server
+}
+
+cgi / /bin/bundle exec slimrb src/pasterb.slim {
+  env DB=./data.db
+  dir .
+}

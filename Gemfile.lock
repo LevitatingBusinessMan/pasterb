@@ -1,0 +1,37 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    slim (5.2.1)
+      temple (~> 0.10.0)
+      tilt (>= 2.1.0)
+    sqlite3 (2.6.0-aarch64-linux-gnu)
+    sqlite3 (2.6.0-aarch64-linux-musl)
+    sqlite3 (2.6.0-arm-linux-gnu)
+    sqlite3 (2.6.0-arm-linux-musl)
+    sqlite3 (2.6.0-arm64-darwin)
+    sqlite3 (2.6.0-x86-linux-gnu)
+    sqlite3 (2.6.0-x86-linux-musl)
+    sqlite3 (2.6.0-x86_64-darwin)
+    sqlite3 (2.6.0-x86_64-linux-gnu)
+    sqlite3 (2.6.0-x86_64-linux-musl)
+    temple (0.10.3)
+    tilt (2.6.0)
+
+PLATFORMS
+  aarch64-linux-gnu
+  aarch64-linux-musl
+  arm-linux-gnu
+  arm-linux-musl
+  arm64-darwin
+  x86-linux-gnu
+  x86-linux-musl
+  x86_64-darwin
+  x86_64-linux-gnu
+  x86_64-linux-musl
+
+DEPENDENCIES
+  slim (~> 5.2)
+  sqlite3 (~> 2.6)
+
+BUNDLED WITH
+   2.6.2
