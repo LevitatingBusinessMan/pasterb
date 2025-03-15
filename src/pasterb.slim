@@ -29,7 +29,14 @@ body
     = "\n"
     = ENV.inspect
   div#history
-    | test
+    h1 History
+    label Name
+    input
+    br
+    label Commit Message
+    input
+    br
+    button submit
 
 script src="static/ace-builds/src/ace.js"
 javascript:
