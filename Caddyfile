@@ -1,5 +1,6 @@
 {
   http_port 8888
+  debug
 }
 
 localhost:8888
@@ -9,7 +10,7 @@ handle_path /static/* {
   file_server
 }
 
-cgi / /bin/bundle exec slimrb src/pasterb.slim {
-  env DB=./data.db
+cgi /* /bin/bundle exec slimrb src/pasterb.slim {
+  env DB=./data.sqlite3
   dir .
 }

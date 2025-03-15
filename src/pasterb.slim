@@ -5,6 +5,12 @@ ruby:
 
   require './src/data.rb'
 
+  $paste = Paste.find_by(read_key: $cgi[:PATH_INFO].sub(/^\/view/, ''))  
+
+  if $paste.nil?
+    $paste = Paste.new
+  end
+
 doctype html
 html
 head
@@ -25,6 +31,7 @@ head
     }
 body
   div#editor
+    = $paste.inspect
     = $cgi.inspect
     = "\n"
     = ENV.inspect
