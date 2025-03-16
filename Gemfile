@@ -15,3 +15,5 @@ gem "irb", "~> 1.15", :group => :development
 gem "rdoc", "~> 6.12", :group => :development
 
 gem "foreman", "~> 0.88.1", :group => :development
+
+gem "cgi", path: "./cgi"

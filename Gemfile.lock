@@ -1,3 +1,8 @@
+PATH
+  remote: cgi
+  specs:
+    cgi (0.4.2)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -84,6 +89,7 @@ PLATFORMS
 
 DEPENDENCIES
   activerecord (~> 8.0)
+  cgi!
   foreman (~> 0.88.1)
   irb (~> 1.15)
   rake (~> 13.2)
