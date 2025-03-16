@@ -12,5 +12,8 @@ namespace :db do
     PasteMigration.migrate :down
     RevisionMigration.migrate :down
   end
+  task :clean do
+    require './src/data.rb'
+    clean_db
+  end
 end
-

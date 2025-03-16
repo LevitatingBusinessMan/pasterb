@@ -7,7 +7,7 @@ ActiveRecord::Base.establish_connection(adapter: 'sqlite3', database: ENV['DB'] 
 ActiveRecord::Base.logger = $log
 
 class Paste < ActiveRecord::Base
-  has_many :revisions
+  has_many :revisions, -> { order(revision_id: :desc) }
   attribute :title, default: "Fresh Paste"
   attribute :read_key, default: -> { SecureRandom.hex 16 }
   attribute :write_key, default: -> { SecureRandom.hex 16 }
@@ -26,7 +26,7 @@ class Paste < ActiveRecord::Base
     if rev
       self.revisions.find_by!(revision_id: rev).content
     else
-      self.revisions.order(revision_id: :desc).first&.content || ""
+      self.revisions.first&.content || ""
     end
   end
 
@@ -88,4 +88,9 @@ class RevisionMigration < ActiveRecord::Migration[8.0]
       t.timestamps
     end
   end
+end
+
+def clean_db
+  puts "Deleting Pastes with no revisions"
+  Paste.where.missing(:revisions).destroy_all
 end
