@@ -38,15 +38,22 @@ ruby:
     $content = $paste.content $rev
   rescue Exception => ex 
     $errors << ex
+    $rev = nil
     $content = $paste.content
   end
 
   if $cgi.request_method == "POST" && $writable
     begin
-      $paste.save unless $paste.persisted? and not $paste.changed?
-      raise "No change with last revision" if $cgi.form["content"].first == $paste.content
-      $paste.revisions.create!(content: $cgi.form["content"].first, name: $cgi.form["name"].first.empty? ? nil : $cgi.form["name"].first)
-      $content = $paste.content
+      if $cgi.form.has_key? "content"
+        raise "Paste cannot be empty" if $cgi.form["content"].first.empty?
+        raise "No change with last revision" if $cgi.form["content"].first == $paste.content
+        $paste.save unless $paste.persisted? and not $paste.changed?
+        $paste.revisions.create!(content: $cgi.form["content"].first, name: $cgi.form["name"].first.empty? ? nil : $cgi.form["name"].first)
+        $content = $paste.content
+      end
+      if $cgi.form.has_key? "title"
+        $paste.update title: $cgi.form["title"].first
+      end
     rescue Exception => ex
       $errors << ex
     end
@@ -55,14 +62,16 @@ ruby:
 doctype html
 html
 head
+  title PasteRB
 body
   #title_area
-    h1#title=$paste.title
+    h1#title[title="Click to copy read link" onclick="navigator.clipboard.writeText('#{$paste.view_link}')"]= $paste.title
     - if $rev
       span#rev= "Showing revision #{$rev}"
       a#latest[href=($writable ? $paste.edit_link : $paste.view_link)] go to latest
     - if $paste.new_record?
       span#unsaved unsaved
+    a#new_paste[href="/"]: h1 New paste
   #flex
     #left
       #editor= $content
@@ -70,27 +79,47 @@ body
       - for e in $errors
         p#error=e
       - if $writable
-        form#revform[action=$paste.edit_link method="post"]
-          label New Revision:  
-          input[placeholder="Revision #{$paste.revisions.length + 1}" name="name"]
-          input#content_input[type="hidden" name="content"]
+        form#revform[action=($paste.new_record? ? "/" : $paste.edit_link) method="post"]
+          label Edit paste title:  
+          input[value=$paste.title name="title"]
           button save
-        br
-      h1 History
+        hr
+        form#revform[action=($paste.new_record? ? "/" : $paste.edit_link) method="post"]
+          label Commit message:
+          br
+          textarea[placeholder="Revision #{$paste.revisions.length + 1}" name="name"]
+          input#content_input[type="hidden" name="content"]
+          br
+          button.like_link: h1[title="Save current text"] COMMIT
+        - unless $paste.new_record?
+          a.pad[href=$paste.view_link] view link
+          - if $writable 
+            span#edit_link: a[href=$paste.edit_link] edit link
+        - else
+          p Please save this paste in order to share it
+      h1#rev_history Revision history
       - for rev in $paste.revisions.order(revision_id: :desc)
         span
           | (#{rev.revision_id})  
-          a[href=($writable ? rev.edit_link : rev.view_link)]= rev.name
+          a[href=($writable ? rev.edit_link : rev.view_link) title=rev.title_info]= rev.name
         br
       br
-      - unless $paste.new_record?
-        a[href=$paste.view_link] view link
-        br
-        - if $writable 
-          a[href=$paste.edit_link] edit link
+      details
+        summary: h1.inline What is this?
+        p PasteRB is a service similar to many other platforms for saving gists or pastes. <br>
+          It allows you to save a piece of text and create a shareable link. <br>
+          PasteRB let's you then update your text with new "revisions". <br>
+          <br>
+          PasteRB makes use of two links to share pastes with.<br>
+          The view link can be used to view a paste.<br>
+          The edit link gives anyone the power to edit a paste<br>
+      p#dragme &#x1F448;drag me
 
 script src="/static/ace/ace.js"
 javascript:
+    // Ensure that the uri always points to the paste (in case the keys were just generated)
+    if (window.history.replaceState) window.history.replaceState({}, "", "#{$writable ? $paste.edit_link : $paste.view_link}")
+
   var editor = ace.edit("editor");
   editor.setTheme("ace/theme/monokai");
   editor.setOptions({
@@ -105,19 +134,22 @@ javascript:
     document.getElementById('content_input').value = editor.getValue()
   }
 
+  function clipboard(selector) {
+    document.querySelector(selector)
+  }
+
 css:
-  #title_area * {
+  #title_area *, .pad {
     padding-right: 5px;
   }
   
-  h1#title {
+  #title_area * {
     display: inline-block;
   }
   
   p#error {
+    color: crimson;
     margin: 0;
-    padding-top: 10px;
-    color: red;
   }
 
   body {
@@ -127,6 +159,8 @@ css:
   
   #flex {
     flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
   }
 
   #left {
@@ -136,7 +170,9 @@ css:
   }
 
   #right {
+    resize: horizontal;
     margin-left: 10px;
+    word-wrap: break-word;
   }
 
   #left, #right {
@@ -150,4 +186,44 @@ css:
     height: 100%;
     padding: 0;
     margin: 0;
+  }
+
+  body {
+    background-color: FloralWhite;
+  }
+
+  p#dragme {
+    position: absolute;
+    bottom: 0;
+    padding: 0;
+    margin: 0;
+  }
+
+  #new_paste {
+    float: right;
+    margin-right: 20px;
+  }
+
+  a {
+    color: SteelBlue;
+  }
+
+  .like_link {
+    background: none;
+     border: none;
+     color: SteelBlue;
+     text-decoration: underline;
+     cursor: pointer; 
+  }
+
+  h1#title {
+    cursor: pointer;
+  }
+
+  .inline {
+    display: inline;
+  }
+
+  h1#rev_history {
+    margin-top: 0;
   }

@@ -8,11 +8,11 @@ ActiveRecord::Base.logger = $log
 
 class Paste < ActiveRecord::Base
   has_many :revisions
-  attribute :title, default: "New Paste"
+  attribute :title, default: "Fresh Paste"
   attribute :read_key, default: -> { SecureRandom.hex 16 }
   attribute :write_key, default: -> { SecureRandom.hex 16 }
-  validates :read_key, uniqueness: true
-  validates :write_key, uniqueness: true
+  validates :read_key, :write_key, presence: true, uniqueness: true
+  validates :title, presence: true
 
   def view_link 
     "/view?=#{self.read_key}"
@@ -48,8 +48,7 @@ end
 class Revision < ActiveRecord::Base
   belongs_to :paste
   after_initialize :init
-  validates :content, presence: true
-  validates :revision_id, presence: true
+  validates :revision_id, :content, presence: true
   validates :revision_id, uniqueness: { scope: :paste_id }
 
   def edit_link
@@ -60,10 +59,18 @@ class Revision < ActiveRecord::Base
     self.paste.view_link + "&rev=#{self.revision_id}"
   end
 
+  def title_info
+    "User-Agent: #{self.user_agent}\n" <<
+    "IP: #{self.ip}\n" <<
+    "Created: #{self.created_at}"
+  end
+
   private
   def init
     self.revision_id ||= self.paste.revisions.length + 1
     self.name ||= "Revision #{self.revision_id}"
+    self.user_agent ||= $cgi&.user_agent
+    self.ip ||= $cgi&.remote_host
   end
 
 end
