@@ -6,13 +6,13 @@
   debug
 }
 
-localhost:8888
+:8888
 
 handle_path /static/* {
   root static
   file_server
 }
 
-cgi /* /bin/bundle exec slimrb src/pasterb.slim {
+cgi /* /bin/bundle exec slimrb --trace src/pasterb.slim {
   dir .
 }

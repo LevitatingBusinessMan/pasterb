@@ -41,6 +41,17 @@ ruby:
     $content = $paste.content
   end
 
+  if $cgi.request_method == "POST" && $writable
+    begin
+      $paste.save unless $paste.persisted? and not $paste.changed?
+      raise "No change with last revision" if $cgi.form["content"].first == $paste.content
+      $paste.revisions.create!(content: $cgi.form["content"].first, name: $cgi.form["name"].first.empty? ? nil : $cgi.form["name"].first)
+      $content = $paste.content
+    rescue Exception => ex
+      $errors << ex
+    end
+  end
+
 doctype html
 html
 head
@@ -59,9 +70,11 @@ body
       - for e in $errors
         p#error=e
       - if $writable
-        label New Revision:  
-        input[placeholder="Revision #{$paste.revisions.length + 1}"]
-        button save
+        form#revform[action=$paste.edit_link method="post"]
+          label New Revision:  
+          input[placeholder="Revision #{$paste.revisions.length + 1}" name="name"]
+          input#content_input[type="hidden" name="content"]
+          button save
         br
       h1 History
       - for rev in $paste.revisions.order(revision_id: :desc)
@@ -82,8 +95,15 @@ javascript:
   editor.setTheme("ace/theme/monokai");
   editor.setOptions({
     wrap: true,
-    fontSize: 20
+    fontSize: 20,
+    readOnly: #{!$writable}
   });
+  editor.session.on('change', on_change);
+  on_change()
+
+  function on_change(delta) {
+    document.getElementById('content_input').value = editor.getValue()
+  }
 
 css:
   #title_area * {
