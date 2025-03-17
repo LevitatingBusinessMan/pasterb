@@ -1,10 +1,10 @@
 ruby:
+  $ENV = if defined? rackenv then rackenv else ENV.to_h end
   require 'cgi'
-  puts "Content-Type: text/html"
-  puts
+  puts "Content-Type: text/html\r\n\r\n" if not defined? rackenv
 
-  $post_data = if ENV["REQUEST_METHOD"] == "POST" and ENV.has_key? "CONTENT_LENGTH"
-    ENV["POST_DATA"] || STDIN.read(ENV["CONTENT_LENGTH"].to_i)
+  $post_data = if $ENV["REQUEST_METHOD"] == "POST" and $ENV.has_key? "CONTENT_LENGTH"
+    $ENV['rack.body'] || STDIN.read($ENV["CONTENT_LENGTH"].to_i)
   end
 
   $errors = []
@@ -13,14 +13,14 @@ ruby:
   require './src/log.rb'
   require './src/ace.rb'
 
-  $params = CGI.parse ENV["QUERY_STRING"]
+  $params = CGI.parse $ENV["QUERY_STRING"]
   $form = if $post_data then CGI.parse $post_data else {} end
   key = $params['']
 
   $writable = true
 
   begin
-  $paste = case ENV["PATH_INFO"]
+  $paste = case $ENV["PATH_INFO"]
   when "/view"
       $writable = false
     Paste.find_by! read_key: key
@@ -29,7 +29,7 @@ ruby:
   when "/"
     Paste.new
   else 
-    raise "Unknown #{ENV["PATH_INFO"]}"
+    raise "Unknown #{$ENV["PATH_INFO"]}"
   end
 
   rescue Exception => ex
@@ -49,7 +49,7 @@ ruby:
     $content = $paste.content
   end
 
-  if ENV["REQUEST_METHOD"] == "POST" && $writable
+  if $ENV["REQUEST_METHOD"] == "POST" && $writable
     begin
       if $form.has_key? "content"
         raise "Paste cannot be empty" if $form["content"].first.empty?
@@ -135,8 +135,8 @@ body
 
 script src=ACE::ENTRY
 javascript:
-    // Ensure that the uri always points to the paste (in case the keys were just generated)
-    if (window.history.replaceState) window.history.replaceState({}, "", "#{$writable ? $paste.edit_link : $paste.view_link}")
+  // Ensure that the uri always points to the paste (in case the keys were just generated)
+  if (window.history.replaceState) window.history.replaceState({}, "", "#{$writable ? $paste.edit_link : $paste.view_link}")
 
   var editor = ace.edit("editor");
   editor.setTheme("ace/theme/monokai");

@@ -7,6 +7,8 @@ ActiveRecord::Base.establish_connection(adapter: 'sqlite3', database: ENV['DB'] 
 
 ActiveRecord::Base.logger = $log
 
+$ENV ||= ENV
+
 class Paste < ActiveRecord::Base
   has_many :revisions, -> { order(revision_id: :desc) }
   attribute :title, default: "Fresh Paste"
@@ -72,8 +74,8 @@ class Revision < ActiveRecord::Base
   def init
     self.revision_id ||= self.paste.revisions.length + 1
     self.name ||= "Revision #{self.revision_id}"
-    self.user_agent ||= $cgi&.user_agent
-    self.ip ||= $cgi&.remote_host
+    self.user_agent ||= $ENV["HTTP_USER_AGENT"] || nil
+    self.ip ||= $ENV["HTTP_REMOTE_HOST"] || nil
   end
 
 end

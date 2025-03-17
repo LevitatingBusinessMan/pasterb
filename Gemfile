@@ -16,4 +16,6 @@ gem "rdoc", "~> 6.12", :group => :development
 
 gem "foreman", "~> 0.88.1", :group => :development
 
-gem "cgi", path: "./cgi"
+gem "rackup", "~> 2.2", :group => :rack
+
+gem "puma", "~> 6.6", :group => :rack
