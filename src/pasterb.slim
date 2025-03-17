@@ -1,7 +1,11 @@
 ruby:
   require 'cgi'
-  $cgi = CGI.new
-  puts $cgi.http_header "text/html"
+  puts "Content-Type: text/html"
+  puts
+
+  $post_data = if ENV["REQUEST_METHOD"] == "POST" and ENV.has_key? "CONTENT_LENGTH"
+    ENV["POST_DATA"] || STDIN.read(ENV["CONTENT_LENGTH"].to_i)
+  end
 
   $errors = []
 
@@ -9,12 +13,14 @@ ruby:
   require './src/log.rb'
   require './src/ace.rb'
 
-  key = $cgi['']
+  $params = CGI.parse ENV["QUERY_STRING"]
+  $form = if $post_data then CGI.parse $post_data else {} end
+  key = $params['']
 
   $writable = true
 
   begin
-  $paste = case $cgi.path_info
+  $paste = case ENV["PATH_INFO"]
   when "/view"
       $writable = false
     Paste.find_by! read_key: key
@@ -23,7 +29,7 @@ ruby:
   when "/"
     Paste.new
   else 
-    raise "Unknown #{$cgi.path_info}"
+    raise "Unknown #{ENV["PATH_INFO"]}"
   end
 
   rescue Exception => ex
@@ -35,7 +41,7 @@ ruby:
   end
 
   begin
-    $rev = $cgi.has_key?("rev") ? $cgi["rev"] : nil
+    $rev = $params.has_key?("rev") ? $params["rev"] : nil
     $content = $paste.content $rev
   rescue Exception => ex 
     $errors << ex
@@ -43,20 +49,20 @@ ruby:
     $content = $paste.content
   end
 
-  if $cgi.request_method == "POST" && $writable
+  if ENV["REQUEST_METHOD"] == "POST" && $writable
     begin
-      if $cgi.form.has_key? "content"
-        raise "Paste cannot be empty" if $cgi.form["content"].first.empty?
-        raise "No change with last revision" if $cgi.form["content"].first == $paste.content
+      if $form.has_key? "content"
+        raise "Paste cannot be empty" if $form["content"].first.empty?
+        raise "No change with last revision" if $form["content"].first == $paste.content
         $paste.save! unless $paste.persisted? and not $paste.changed?
-        $paste.revisions.create!(content: $cgi.form["content"].first, name: $cgi.form["name"].first.empty? ? nil : $cgi.form["name"].first)
+        $paste.revisions.create!(content: $form["content"].first, name: $form["name"].first.empty? ? nil : $form["name"].first)
         $content = $paste.content
       end
-      if $cgi.form.has_key? "title"
-        $paste.update! title: $cgi.form["title"].first
+      if $form.has_key? "title"
+        $paste.update! title: $form["title"].first
       end
-      if $cgi.form.has_key? "syntax"
-        $paste.update! syntax: $cgi.form["syntax"].first
+      if $form.has_key? "syntax"
+        $paste.update! syntax: $form["syntax"].first
       end
     rescue Exception => ex
       $errors << ex
@@ -124,7 +130,7 @@ body
           <br>
           PasteRB makes use of two links to share pastes with.<br>
           The view link can be used to view a paste.<br>
-          The edit link gives anyone the power to edit a paste<br>
+          The edit link allows anyone to edit a paste<br>
       p#dragme &#x1F448;drag me
 
 script src=ACE::ENTRY
