@@ -74,7 +74,7 @@ ruby:
 doctype html
 html
 head
-  title PasteRB
+  title= "PasteRB | #{$paste.title}"
 body
   #title_area
     h1#title[title="Click to copy read link" onclick="navigator.clipboard.writeText('$ENV['HTTP_POST']#{$paste.view_link}')"]= $paste.title
@@ -86,7 +86,7 @@ body
     a#new_paste[href="/"]: h1 New paste
   #flex
     #left
-      #editor= $ENV.inspect
+      #editor= $content
     #right
       - for e in $errors
         p#error=e
