@@ -1,9 +1,24 @@
 = PasteRB.slim
 
 == Running
-Get a caddy build from <https://caddyserver.com/download> with https://github.com/aksdb/caddy-cgi[cgi support] and save it as `caddy_cgi`.
 
+PasteRB can be served as a https://github.com/rack/rack/blob/main/SPEC.rdoc[Rack] or https://en.wikipedia.org/wiki/CGI[CGI] application.
+
+=== Rack
+
+```SH
+bundle install
+bundle exec rake db:up
+bundle exec rackup
 ```
+
+=== CGI via Caddy
+
+The repository includes a sample Caddyfile for development.
+
+To use it set a caddy build from <https://caddyserver.com/download> with https://github.com/aksdb/caddy-cgi[cgi support] and save it as `caddy_cgi`.
+
+```SH
 bundle install
 bundle exec rake db:up
 bundle exec foreman start
