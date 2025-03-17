@@ -14,8 +14,8 @@ With support for Rack and regular old CGI.
 | Template Engine
 | https://slim-template.github.io/[Slim]
 
-| Database
-| https://github.com/rails/rails/tree/main/activerecord[ActiveRecord] with https://sqlite.org/[sqlite3]
+| Database ORM
+| https://github.com/rails/rails/tree/main/activerecord[Active Record] backed by https://sqlite.org/[sqlite3]
 
 | Web Editor
 | https://ace.c9.io/[Ace]
