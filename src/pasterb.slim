@@ -41,7 +41,7 @@ ruby:
   end
 
   begin
-    $rev = $params.has_key?("rev") ? $params["rev"] : nil
+    $rev = $params.has_key?("rev") ? $params["rev"].first : nil
     $content = $paste.content $rev
   rescue Exception => ex 
     $errors << ex
