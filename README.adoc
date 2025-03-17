@@ -1,4 +1,10 @@
+:hardbreaks-option:
+
 = PasteRB.slim
+
+A service for storing pastes/gists with collaboration.
+Anyone with the `/edit` link can modify a paste.
+With support for Rack and regular old CGI.
 
 == Running
 
@@ -16,6 +22,7 @@ bundle exec rackup
 
 This application can completely be run using CGI.
 The CGI call would be `/bin/bundle exec src/pasterb.slim`.
+When using CGI, expect >500ms response times.
 
 ==== CGI via Caddy
 
@@ -26,5 +33,22 @@ To use it set a caddy build from <https://caddyserver.com/download> with https:/
 ```SH
 bundle install
 bundle exec rake db:up
+./caddy_cgi run --config Caddyfile --watch
+```
+
+=== Running both for development
+Use the `Procfile` to run both caddy and rack while watching the database log.
+
+```
+bundle install
+bundle exec rake db:up
 bundle exec foreman start
+```
+
+== Cleaning the database
+The logic of the application makes it possible to create empty pastes (a paste with no revisions).
+There is a rack task to clean these out.
+
+```
+bundle exec rack db:clean
 ```
