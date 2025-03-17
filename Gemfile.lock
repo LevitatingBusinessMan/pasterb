@@ -93,7 +93,6 @@ DEPENDENCIES
   foreman (~> 0.88.1)
   irb (~> 1.15)
   puma (~> 6.6)
-  rack (~> 3.1)
   rackup (~> 2.2)
   rake (~> 13.2)
   rdoc (~> 6.12)
