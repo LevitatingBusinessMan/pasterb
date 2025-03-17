@@ -7,6 +7,7 @@ ruby:
 
   require './src/data.rb'
   require './src/log.rb'
+  require './src/ace.rb'
 
   key = $cgi['']
 
@@ -47,17 +48,22 @@ ruby:
       if $cgi.form.has_key? "content"
         raise "Paste cannot be empty" if $cgi.form["content"].first.empty?
         raise "No change with last revision" if $cgi.form["content"].first == $paste.content
-        $paste.save unless $paste.persisted? and not $paste.changed?
+        $paste.save! unless $paste.persisted? and not $paste.changed?
         $paste.revisions.create!(content: $cgi.form["content"].first, name: $cgi.form["name"].first.empty? ? nil : $cgi.form["name"].first)
         $content = $paste.content
       end
       if $cgi.form.has_key? "title"
-        $paste.update title: $cgi.form["title"].first
+        $paste.update! title: $cgi.form["title"].first
+      end
+      if $cgi.form.has_key? "syntax"
+        $paste.update! syntax: $cgi.form["syntax"].first
       end
     rescue Exception => ex
       $errors << ex
     end
   end
+
+  @action_path = $paste.new_record? ? "/" : $paste.edit_link
 
 doctype html
 html
@@ -79,12 +85,18 @@ body
       - for e in $errors
         p#error=e
       - if $writable
-        form#revform[action=($paste.new_record? ? "/" : $paste.edit_link) method="post"]
+        form[action=(@action_path) method="post"]
           label Edit paste title:  
           input[value=$paste.title name="title"]
           button save
+        form[action=(@action_path) method="post"]
+          label Syntax:
+          select[name="syntax"]
+            - for m in ACE.modes 
+              option[value=m selected=(m == $paste.syntax)]= m
+          button save
         hr
-        form#revform[action=($paste.new_record? ? "/" : $paste.edit_link) method="post"]
+        form[action=(@action_path) method="post"]
           label Commit message:
           br
           textarea[placeholder="Revision #{$paste.revisions.length + 1}" name="name"]
@@ -115,7 +127,7 @@ body
           The edit link gives anyone the power to edit a paste<br>
       p#dragme &#x1F448;drag me
 
-script src="/static/ace/ace.js"
+script src=ACE::ENTRY
 javascript:
     // Ensure that the uri always points to the paste (in case the keys were just generated)
     if (window.history.replaceState) window.history.replaceState({}, "", "#{$writable ? $paste.edit_link : $paste.view_link}")
@@ -125,7 +137,8 @@ javascript:
   editor.setOptions({
     wrap: true,
     fontSize: 20,
-    readOnly: #{!$writable}
+    readOnly: #{!$writable},
+    mode: "ace/mode/#{$paste.syntax || "text"}"
   });
   editor.session.on('change', on_change);
   on_change()

@@ -1,6 +1,7 @@
 require 'active_record'
 require 'securerandom'
 require './src/log.rb'
+require './src/ace.rb'
 
 ActiveRecord::Base.establish_connection(adapter: 'sqlite3', database: ENV['DB'] || "pasterb.sqlite3")
 
@@ -9,10 +10,12 @@ ActiveRecord::Base.logger = $log
 class Paste < ActiveRecord::Base
   has_many :revisions, -> { order(revision_id: :desc) }
   attribute :title, default: "Fresh Paste"
+  attribute :syntax, default: "text"
   attribute :read_key, default: -> { SecureRandom.hex 16 }
   attribute :write_key, default: -> { SecureRandom.hex 16 }
   validates :read_key, :write_key, presence: true, uniqueness: true
   validates :title, presence: true
+  validates :syntax, inclusion: { in: ACE.modes }
 
   def view_link 
     "/view?=#{self.read_key}"
