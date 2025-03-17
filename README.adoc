@@ -6,13 +6,32 @@ A service for storing pastes/gists with collaboration.
 Anyone with the `/edit` link can modify a paste.
 With support for Rack and regular old CGI.
 
+[cols="1,1"]
+|===
+| Gateway Interface
+| https://github.com/rack/rack/blob/main/SPEC.rdoc[Rack] or https://en.wikipedia.org/wiki/CGI[CGI]
+
+| Template Engine
+| https://slim-template.github.io/[Slim]
+
+| Database
+| https://github.com/rails/rails/tree/main/activerecord[ActiveRecord] with https://sqlite.org/[sqlite3]
+
+| Web Editor
+| https://ace.c9.io/[Ace]
+
+|===
+
 == Running
 
 PasteRB can be served as a https://github.com/rack/rack/blob/main/SPEC.rdoc[Rack] or https://en.wikipedia.org/wiki/CGI[CGI] application.
 
 === Rack
 
-```SH
+To use Rack utilize the `config.ru` rackup file.
+The default server is https://github.com/puma/puma[puma].
+
+```
 bundle install
 bundle exec rake db:up
 bundle exec rackup
@@ -30,7 +49,7 @@ The repository includes a sample Caddyfile for development.
 
 To use it set a caddy build from <https://caddyserver.com/download> with https://github.com/aksdb/caddy-cgi[cgi support] and save it as `caddy_cgi`.
 
-```SH
+```
 bundle install
 bundle exec rake db:up
 ./caddy_cgi run --config Caddyfile --watch
