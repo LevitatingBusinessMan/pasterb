@@ -12,7 +12,12 @@ bundle exec rake db:up
 bundle exec rackup
 ```
 
-=== CGI via Caddy
+=== CGI
+
+This application can completely be run using CGI.
+The CGI call would be `/bin/bundle exec src/pasterb.slim`.
+
+==== CGI via Caddy
 
 The repository includes a sample Caddyfile for development.
 
