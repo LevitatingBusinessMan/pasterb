@@ -71,13 +71,15 @@ ruby:
 
   @action_path = $paste.new_record? ? "/" : $paste.edit_link
 
+  @setpath = ($writable ? $paste.edit_link : $paste.view_link) + ($rev ? "&rev=#{$rev}" : '')
+
 doctype html
 html
 head
   title= "PasteRB | #{$paste.title}"
 body
   #title_area
-    h1#title[title="Click to copy read link" onclick="navigator.clipboard.writeText('$ENV['HTTP_POST']#{$paste.view_link}')"]= $paste.title
+    h1#title[title="Copy view link" onclick="navigator.clipboard.writeText('#{($ENV['HTTP_HOST'] || ENV['SERVER_NAME']) + $paste.view_link + ($rev ? "&rev=#{$rev}" : '')}')"]= $paste.title
     - if $rev
       span#rev= "Showing revision #{$rev}"
       a#latest[href=($writable ? $paste.edit_link : $paste.view_link)] go to latest
@@ -136,7 +138,10 @@ body
 script src=ACE::ENTRY
 javascript:
   // Ensure that the uri always points to the paste (in case the keys were just generated)
-  if (window.history.replaceState) window.history.replaceState({}, "", "#{$writable ? $paste.edit_link : $paste.view_link}")
+  
+  if (window.history.replaceState) {
+    window.history.replaceState({}, "", "#{@setpath}".replace("amp;", ""))
+  }
 
   var editor = ace.edit("editor");
   editor.setTheme("ace/theme/monokai");
