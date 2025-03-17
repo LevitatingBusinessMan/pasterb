@@ -77,7 +77,7 @@ head
   title PasteRB
 body
   #title_area
-    h1#title[title="Click to copy read link" onclick="navigator.clipboard.writeText('#{$paste.view_link}')"]= $paste.title
+    h1#title[title="Click to copy read link" onclick="navigator.clipboard.writeText('$ENV['HTTP_POST']#{$paste.view_link}')"]= $paste.title
     - if $rev
       span#rev= "Showing revision #{$rev}"
       a#latest[href=($writable ? $paste.edit_link : $paste.view_link)] go to latest
@@ -86,7 +86,7 @@ body
     a#new_paste[href="/"]: h1 New paste
   #flex
     #left
-      #editor= $content
+      #editor= $ENV.inspect
     #right
       - for e in $errors
         p#error=e
