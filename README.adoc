@@ -9,7 +9,7 @@ With support for Rack and regular old CGI.
 [cols="1,1"]
 |===
 | Gateway Interface
-| https://github.com/rack/rack/blob/main/SPEC.rdoc[Rack] or https://en.wikipedia.org/wiki/CGI[CGI]
+| https://github.com/rack/rack/blob/main/SPEC.rdoc[Rack] or https://en.m.wikipedia.org/wiki/Common_Gateway_Interface[CGI]
 
 | Template Engine
 | https://slim-template.github.io/[Slim]
