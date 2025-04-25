@@ -75,7 +75,7 @@ class Revision < ActiveRecord::Base
     self.revision_id ||= self.paste.revisions.length + 1
     self.name ||= "Revision #{self.revision_id}"
     self.user_agent ||= $ENV["HTTP_USER_AGENT"] || nil
-    self.ip ||= $ENV["HTTP_REMOTE_HOST"] || nil
+    self.ip ||= $ENV["HTTP_X_REAL_IP"] || $ENV["HTTP_REMOTE_HOST"] || $ENV["HTTP_REMOTE_ADDR"] || nil
   end
 
 end
